@@ -4,24 +4,26 @@ const { Client, NoAuth, LocalAuth, LegacySessionAuth } = require('whatsapp-web.j
 const clients = require('../../clients.json');
 
 const newClient = async (clientId = 0, options) => {
-  console.log(clients);
   if (clients[clientId]) {
     clientId = Object.keys(clients).length;
   }
 
-  const clientName = `whatsbot client #${clientId}`;
+  const clientName = `whatsbot_client_${clientId}`;
   let client = [];
   if(options.auth === false) {
     client = new Client({
-      authStrategy: new NoAuth()
+      authStrategy: new NoAuth(),
+      puppeteer: { handleSIGINT: false}
     });
   } else if(options.auth === 'legacy') {
     client = new Client({
-      authStrategy: new LegacySessionAuth()
+      authStrategy: new LegacySessionAuth(),
+      puppeteer: { handleSIGINT: false}
     });
   } else {
     client = new Client({
-      authStrategy: new LocalAuth()
+      authStrategy: new LocalAuth({clientId: clientName}),
+      puppeteer: { handleSIGINT: false}
     });
   }
   client.on('qr', qr => {
@@ -32,13 +34,58 @@ const newClient = async (clientId = 0, options) => {
     console.log(`\x1b[32mSuccessfully authorized!\x1b[0m`);
     console.log(`\x1b[32mClient: \x1b[33m${clientName}\x1b[0m`);
     console.log(`\x1b[32mClient ID: \x1b[33m${clientId}\x1b[0m`);
-    return console.log(`\x1b[32mYou can now run whatsbot commands with: \x1b[0mwhatsbot start --client-id=${clientId}`);
+    console.log(`Wait for 3-4 minutes and you can run whatsbot commands with: \x1b[32mwhatsbot start ${clientId}\x1b[0m`);
+    console.log(`\x1b[32m${clientName} running...\x1b[0m`);
   });
 
-  clients[clientId] = clientName;
-  console.log(JSON.stringify(clients));
-  //rewrite clients.json
+  client.on('message', message => {
+    console.log(`\x1b[33m${clientName}:\x1b[0m ${message.from} say ${message.body}`);
+  });
+
+  clients[clientId] = {name: clientName, options: options};
   fs.writeFileSync('./clients.json', JSON.stringify(clients));
+  client.initialize();
+}
+
+const startClient = async (clientId = 0) => {
+  if (!clients[clientId]) {
+    console.log(`\x1b[31mClient #${clientId} does not exist!\x1b[0m`);
+    process.exit(1);
+  }
+
+  const clientName = clients[clientId].name;
+  const options = clients[clientId].options;
+  let client = [];
+  if(options.auth === false) {
+    client = new Client({
+      authStrategy: new NoAuth(),
+      puppeteer: { handleSIGINT: false}
+    });
+  } else if(options.auth === 'legacy') {
+    client = new Client({
+      authStrategy: new LegacySessionAuth(),
+      puppeteer: { handleSIGINT: false}
+    });
+  } else {
+    client = new Client({
+      authStrategy: new LocalAuth({clientId: clientName}),
+      puppeteer: { handleSIGINT: false}
+    });
+  }
+  client.on('qr', qr => {
+    qrcode.generate(qr, {small: true});
+  });
+
+  client.on('ready', () => {
+    console.log(`\x1b[32m${clientName} \x1b[33mrunning...\x1b[0m`);
+  });
+
+  client.on('message', message => {
+    
+
+    console.log(`\x1b[33m${clientName}:\x1b[0m ${message.from} say ${message.body}`);
+  });
+
   client.initialize();
 }
 
@@ -65,8 +112,20 @@ const commands = [
       }
     ],
     action: newClient
+  },
+  {
+    name: 'start',
+    description: 'Start a client',
+    arguments: [
+      {
+        name: '<clientId>',
+        description: 'Client ID',
+      }
+    ],
+    options: [
+    ],
+    action: startClient
   }
 ];
 
-exports.newClient = newClient;
 exports.commands = commands;
