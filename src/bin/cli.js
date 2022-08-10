@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { Command, Option } = require('commander');
-const requireContext = require('require-context');
+const fs = require('fs');
 
 cli = new Command();
 cli.description("Whatsapp Bot CLI");
@@ -10,9 +10,9 @@ cli.usage("<command>");
 cli.addHelpCommand(true);
 cli.helpOption(true);
 
-const commands = requireContext("../../src/commands", false, /\.js$/);
-commands.keys().forEach((key, value) => {
-  const cmdList = commands(key).commands
+const folder = fs.readdirSync(`${__dirname}/../commands`);
+folder.forEach((key) => {
+  const cmdList = require(`${__dirname}/../commands/${key}`).commands;
   cmdList.forEach((cmd) => {
     let args = [];
     const exp = cli.command(cmd.name)
