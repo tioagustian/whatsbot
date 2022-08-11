@@ -1,5 +1,4 @@
 const pm2 = require('pm2');
-const Handler = require('./Handler');
 
 exports.Daemon = class Daemon {
   options = {};
@@ -38,8 +37,6 @@ exports.Daemon = class Daemon {
             resolve(packet);
           } else if (packet.data.type == 'qr') {
             console.log(packet.data.qr);
-          } else if(packet.data.type == 'message') {
-            new Handler({packet, options: this.options}).handle();
           } else {
             console.log(packet.data.message);
           }
@@ -83,13 +80,10 @@ exports.Daemon = class Daemon {
         });
         pm2.launchBus(function(err, pm2_bus) {
           pm2_bus.on('process:msg', function(packet) {
-            console.log(packet);
             if (packet.data.status) {
               resolve(packet);
             } else if (packet.data.type == 'qr') {
               console.log(packet.data.qr);
-            } else if(packet.data.type == 'message') {
-              new Handler({packet, options: this.options}).handle();
             } else {
               console.log(packet.data.message);
             }

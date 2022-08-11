@@ -1,15 +1,39 @@
-exports.Handler = class Handler {
+const Router = require('./Router');
+
+module.exports = class Handler {
   client = {};
   message = {};
   packet = {};
+  chats = [];
 
   constructor(packet) {
     this.packet = packet;
-    this.client = packet.data.client;
-    this.message = packet.data.message;
+    this.client = packet.client;
+    this.chats = [];
   }
 
-  async handle() {
-   return ['handler', this.packet];
+  handle(message) {
+    try {
+      this.message = message;
+      const router = new Router(this);
+      const chats = router.callAction();
+      this.chats = chats;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  reply(message, options = {}) {
+    this.message.reply(message);
+    return {message, options};
+  }
+
+  sendMessage(from, message, options = {}) {
+    this.client.sendMessage(from, message);
+    return {message, options};
+  }
+
+  getChats() {
+    return this.chats;
   }
 }

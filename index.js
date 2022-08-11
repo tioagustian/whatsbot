@@ -1,5 +1,6 @@
 'use strict';
 
 module.exports = {
-  Whatsbot: require('./src/Whatsbot'),
+  Whatsbot: require('./src/index'),
+  Router: require('./src/Router')
 };

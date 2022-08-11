@@ -7,6 +7,7 @@ const qrcode = require('qrcode-terminal');
 const Handler = require('./Handler');
 
 let client = [];
+
 if(options.auth === false) {
   client = new Client({
     authStrategy: new NoAuth(),
@@ -31,29 +32,21 @@ client.on('qr', qr => {
 
 client.on('ready', () => {
   output({message: `\x1b[32mSuccessfully authorized!\x1b[0m`});
-  output({message: `\x1b[32mClient: \x1b[33m${clientName}\x1b[0m`});
-  output({message: `\x1b[32mClient ID: \x1b[33m${clientId}\x1b[0m`});
+  output({message: `\x1b[0mClient: \x1b[33m${clientName}\x1b[0m`});
+  output({message: `\x1b[0mClient ID: \x1b[33m${clientId}\x1b[0m`});
   output({status: 'online', message: `\x1b[32m${clientName} running...\x1b[0m`});
 });
 
+let handler = new Handler({client: client, clientName: clientName, clientId: clientId});
+
 client.on('message', message => {
   output(`\x1b[33mwhatsbot@${clientName}:\x1b[0m ${message.from} say ${message.body}`);
-  let handler = new Handler({client: client, message: message, clientName: clientName, clientId: clientId});
-  console.log(handler.handle());
+  handler.handle(message);
 });
 client.initialize();
 
 output = function(data) {
   console.log(data);
-  process.send({
-    type : 'process:msg',
-    data : data
-  })
-}
-
-sendClient = function(data) {
-  data.type = 'message';
-  console.log(`\x1b[33mwhatsbot@${data.clientName}:\x1b[0m ${data.message.from} say ${data.message.body}`);
   process.send({
     type : 'process:msg',
     data : data

@@ -121,7 +121,7 @@ const startClient = async (clientName = 'client_0') => {
       }
       return c;
     });
-    console.log(`Client '${clientName}' is now online!`);
+    console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
     fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
     process.exit(1);
   }
@@ -196,7 +196,7 @@ const restartClient = async (clientName = 'client_0') => {
       }
       return c;
     });
-    console.log(`Client '${clientName}' is now online!`);
+    console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
     fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
     process.exit(1);
   }
@@ -255,7 +255,20 @@ const commands = [
     options: [
     ],
     action: stopClient
-  }
+  },
+  {
+    name: 'restart',
+    description: 'Retart a client',
+    arguments: [
+      {
+        name: '<client>',
+        description: 'Client ID or name',
+      }
+    ],
+    options: [
+    ],
+    action: startClient
+  },
 ];
 
 exports.commands = commands;
