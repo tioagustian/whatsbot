@@ -13,7 +13,7 @@
     <img alt="License: ISC" src="https://img.shields.io/github/license/tioagustian/@tioagustian/whatsbot" />
   </a>
   <a href="https://twitter.com/tio\_agst" target="_blank">
-    <img alt="Twitter: tio\_agst" src="https://img.shields.io/twitter/follow/tio\_agst.svg?style=social" />
+    <img alt="Twitter: tio\_agst" src="https://img.shields.io/twitter/follow/tio_agst.svg?style=social" />
   </a>
 </p>
 
