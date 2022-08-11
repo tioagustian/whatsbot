@@ -10,7 +10,7 @@
     <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
   </a>
   <a href="https://github.com/tioagustian/whatsbot/blob/master/LICENSE" target="_blank">
-    <img alt="License: ISC" src="https://img.shields.io/github/license/tioagustian/@tioagustian/whatsbot" />
+    <img alt="License: MIT" src="https://img.shields.io/github/license/tioagustian/@tioagustian/whatsbot" />
   </a>
   <a href="https://twitter.com/tio\_agst" target="_blank">
     <img alt="Twitter: tio\_agst" src="https://img.shields.io/twitter/follow/tio_agst.svg?style=social" />
