@@ -1,92 +1,205 @@
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const { Client, NoAuth, LocalAuth, LegacySessionAuth } = require('whatsapp-web.js');
-const clients = require('../../clients.json');
+const inquirer = require('inquirer');
+const { Daemon } = require('../Daemon');
 
-const newClient = async (clientId = 0, options) => {
-  if (clients[clientId]) {
-    clientId = Object.keys(clients).length;
+const newClient = async (clientName = '', options) => {
+  
+  let clients = [];
+  try {
+    clients = require(`${__dirname}/../../clients.json`);
+  } catch (error) {
+    console.log(`If there isn't a clients.json file, we'll make one for you.`);
+    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients));
   }
-
-  const clientName = `whatsbot_client_${clientId}`;
-  let client = [];
-  if(options.auth === false) {
-    client = new Client({
-      authStrategy: new NoAuth(),
-      puppeteer: { handleSIGINT: false}
-    });
-  } else if(options.auth === 'legacy') {
-    client = new Client({
-      authStrategy: new LegacySessionAuth(),
-      puppeteer: { handleSIGINT: false}
-    });
+  
+  if (clientName === '') {
+    const questions = [
+      {
+        type: 'input',
+        name: 'clientName',
+        message: 'Client name:',
+        default: 'client_' + Object.keys(clients).length,
+        validate: function(value) {
+          const pass = value.match(/^[a-zA-Z0-9_]+$/);
+          if (pass) {
+            return true;
+          }
+          return 'Please enter only letters, numbers, and underscores!';
+        }
+      },
+      {
+        type: 'list',
+        name: 'auth',
+        message: 'Authentication:',
+        choices: ['No Authentication', 'Local Authentication', 'Legacy Session Authentication'],
+        default: 'Local Authentication'
+      }
+    ];
+    const authList = {'No Authentication': false, 'Local Authentication': 'local', 'Legacy Session Authentication': 'legacy'};
+    const answers = await inquirer.prompt(questions);
+    clientName = answers.clientName;
+    options = {
+      auth: authList[answers.auth]
+    };
   } else {
-    client = new Client({
-      authStrategy: new LocalAuth({clientId: clientName}),
-      puppeteer: { handleSIGINT: false}
-    });
+    const pass = clientName.match(/^[a-zA-Z0-9_]+$/);
+    if (!pass) {
+      console.log('Please enter only letters, numbers, and underscores!');
+      process.exit(1);
+    }
   }
-  client.on('qr', qr => {
-    qrcode.generate(qr, {small: true});
-  });
 
-  client.on('ready', () => {
-    console.log(`\x1b[32mSuccessfully authorized!\x1b[0m`);
-    console.log(`\x1b[32mClient: \x1b[33m${clientName}\x1b[0m`);
-    console.log(`\x1b[32mClient ID: \x1b[33m${clientId}\x1b[0m`);
-    console.log(`Wait for 3-4 minutes and you can run whatsbot commands with: \x1b[32mwhatsbot start ${clientId}\x1b[0m`);
-    console.log(`\x1b[32m${clientName} running...\x1b[0m`);
-  });
-
-  client.on('message', message => {
-    console.log(`\x1b[33m${clientName}:\x1b[0m ${message.from} say ${message.body}`);
-  });
-
-  clients[clientId] = {name: clientName, options: options};
-  fs.writeFileSync('./clients.json', JSON.stringify(clients));
-  client.initialize();
-}
-
-const startClient = async (clientId = 0) => {
-  if (!clients[clientId]) {
-    console.log(`\x1b[31mClient #${clientId} does not exist!\x1b[0m`);
+  if (clients.some(client => client.name === clientName)) {
+    console.log(`Client '${clientName}' already exists!`);
     process.exit(1);
   }
 
-  const clientName = clients[clientId].name;
-  const options = clients[clientId].options;
-  let client = [];
-  if(options.auth === false) {
-    client = new Client({
-      authStrategy: new NoAuth(),
-      puppeteer: { handleSIGINT: false}
-    });
-  } else if(options.auth === 'legacy') {
-    client = new Client({
-      authStrategy: new LegacySessionAuth(),
-      puppeteer: { handleSIGINT: false}
-    });
-  } else {
-    client = new Client({
-      authStrategy: new LocalAuth({clientId: clientName}),
-      puppeteer: { handleSIGINT: false}
-    });
+  if(options.config != undefined) {
+    options.config = `${process.cwd()}/${options.config}`;
   }
-  client.on('qr', qr => {
-    qrcode.generate(qr, {small: true});
+
+  console.log(`Starting client '${clientName}'...`);
+  const clientId = 'whatsbot_client_' + Object.keys(clients).length;
+  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  process.on('SIGINT', async function() {
+    await daemon.stop();
+    console.log('Aborted!');
+    process.exit();
   });
+  const data = await daemon.start();
+  if (data.data.status === 'online') {
+    const client = {
+      id: clientId,
+      name: clientName,
+      options: options,
+      process: data.process,
+      status: 'online',
+      at: data.at
+    }
+    clients.push(client);
+    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+    process.exit(1);
+  }
+}
 
-  client.on('ready', () => {
-    console.log(`\x1b[32m${clientName} \x1b[33mrunning...\x1b[0m`);
+const startClient = async (clientName = 'client_0') => {
+  let clients = [];
+  try {
+    clients = require(`${__dirname}/../../clients.json`);
+  } catch (error) {
+    console.log(`No clients file found!`);
+    process.exit(1);
+  }
+  const client = clients.find(client => client.name === clientName);
+  if(!client) {
+    console.log(`Client '${client.name}' does not exist!`);
+    process.exit(1);
+  }
+  if (client.status === 'online') {
+    return restartClient(clientName);
+  }
+
+  console.log(`Starting client '${client.name}'...`);
+  const clientId = client.id;
+  const options = client.options;
+  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  process.on('SIGINT', async function() {
+    await daemon.stop();
+    console.log('Aborted!');
+    process.exit();
   });
+  const data = await daemon.start();
+  if (data.data.status === 'online') {
+    client.status = 'online';
+    clients = clients.map(c => {
+      if (c.name === clientName) {
+        client.process = data.process;
+        client.at = data.at;
+        return client;
+      }
+      return c;
+    });
+    console.log(`Client '${clientName}' is now online!`);
+    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+    process.exit(1);
+  }
+}
 
-  client.on('message', message => {
-    
+const stopClient = async (clientName = 'client_0') => {
+  let clients = [];
+  try {
+    clients = require(`${__dirname}/../../clients.json`);
+  } catch (error) {
+    console.log(`No clients file found!`);
+    process.exit(1);
+  }
+  const client = clients.find(client => client.name === clientName);
+  if(!client) {
+    console.log(`Client '${client.name}' does not exist!`);
+    process.exit(1);
+  }
+  if (client.status === 'offline') {
+    console.log(`Client '${client.name}' is already offline!`);
+    process.exit(1);
+  }
 
-    console.log(`\x1b[33m${clientName}:\x1b[0m ${message.from} say ${message.body}`);
+  console.log(`Stoping client '${client.name}'...`);
+  const clientId = client.id;
+  const options = client.options;
+  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  const data = await daemon.stop();
+  if (data.data.status === 'offline') {
+    client.status = 'offline';
+    clients = clients.map(c => {
+      if (c.name === clientName) {
+        return client;
+      }
+      return c;
+    });
+    console.log(`Client '${clientName}' is now offline!`);
+    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+    process.exit(1);
+  }
+}
+
+const restartClient = async (clientName = 'client_0') => {
+  let clients = [];
+  try {
+    clients = require(`${__dirname}/../../clients.json`);
+  } catch (error) {
+    console.log(`No clients file found!`);
+    process.exit(1);
+  }
+  const client = clients.find(client => client.name === clientName);
+  if(!client) {
+    console.log(`Client '${client.name}' does not exist!`);
+    process.exit(1);
+  }
+
+  console.log(`Restarting client '${client.name}'...`);
+  const clientId = client.id;
+  const options = client.options;
+  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  process.on('SIGINT', async function() {
+    await daemon.stop();
+    console.log('Aborted!');
+    process.exit();
   });
-
-  client.initialize();
+  const data = await daemon.restart();
+  if (data.data.status === 'online') {
+    client.status = 'online';
+    clients = clients.map(c => {
+      if (c.name === clientName) {
+        return client;
+      }
+      return c;
+    });
+    console.log(`Client '${clientName}' is now online!`);
+    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+    process.exit(1);
+  }
 }
 
 const commands = [
@@ -95,8 +208,8 @@ const commands = [
     description: 'Create a new client',
     arguments: [
       {
-        name: '[clientId]',
-        description: 'Client ID',
+        name: '[clientName]',
+        description: 'Client Name',
       }
     ],
     options: [
@@ -109,6 +222,10 @@ const commands = [
         description: 'Authentication method',
         default: 'local',
         choices: ['local', 'legacysession']
+      },
+      {
+        name: '-c, --config [configurationFile]',
+        description: 'Configuration file'
       }
     ],
     action: newClient
@@ -118,13 +235,26 @@ const commands = [
     description: 'Start a client',
     arguments: [
       {
-        name: '<clientId>',
-        description: 'Client ID',
+        name: '<client>',
+        description: 'Client ID or name',
       }
     ],
     options: [
     ],
     action: startClient
+  },
+  {
+    name: 'stop',
+    description: 'Stop a client',
+    arguments: [
+      {
+        name: '<client>',
+        description: 'Client ID or name',
+      }
+    ],
+    options: [
+    ],
+    action: stopClient
   }
 ];
 
