@@ -1,7 +1,7 @@
 {
   "name": "@tioagustian/whatsbot",
-  "version": "0.0.7",
-  "description": "WhatsApp Bot",
+  "version": "0.0.9",
+  "description": "A toolkit for working with the WhatsApp Web API",
   "main": "index.js",
   "bin": {
     "whatsbot": "/src/bin/cli.js"
