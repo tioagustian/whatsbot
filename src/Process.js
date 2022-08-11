@@ -1,10 +1,12 @@
 const args = process.argv.slice(2);
 const { Client, NoAuth, LocalAuth, LegacySessionAuth } = require('whatsapp-web.js');
+const { output } = require('./Utils');
 const options = args[2] ? JSON.parse(args[2]) : {};
 const clientId = options.clientId;
 const clientName = options.clientName;
 const qrcode = require('qrcode-terminal');
 const Handler = require('./Handler');
+const Whatsbot = require('./Whatsbot');
 
 let client = [];
 
@@ -37,18 +39,10 @@ client.on('ready', () => {
   output({status: 'online', message: `\x1b[32m${clientName} running...\x1b[0m`});
 });
 
-let handler = new Handler({client: client, clientName: clientName, clientId: clientId});
+const handler = new Handler(new Whatsbot(client, clientName, clientId));
 
 client.on('message', message => {
   output(`\x1b[33mwhatsbot@${clientName}:\x1b[0m ${message.from} say ${message.body}`);
   handler.handle(message);
 });
 client.initialize();
-
-output = function(data) {
-  console.log(data);
-  process.send({
-    type : 'process:msg',
-    data : data
-  })
-}
