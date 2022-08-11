@@ -1,1 +1,17 @@
-[{"name":"whatsbot_client_0","options":{"auth":"local"}}]
+[
+  {
+    "id": "whatsbot_client_0",
+    "name": "client_0",
+    "options": {
+      "auth": "local"
+    },
+    "process": {
+      "namespace": "default",
+      "rev": "106f44a9829ca67e0a33225a619b3e6b506c2e9a",
+      "name": "whatsbot_client_0",
+      "pm_id": 0
+    },
+    "status": "online",
+    "at": 1660190480877
+  }
+]
