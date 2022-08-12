@@ -71,27 +71,26 @@ const newClient = async (clientName = '', options) => {
 
   try {
     const data = await daemon.start();
+    if (data.data.status === 'online') {
+      const client = {
+        id: clientId,
+        name: clientName,
+        options: options,
+        processId: processId,
+        process: data.process,
+        status: 'online',
+        at: data.at
+      }
+      clients.push(client);
+      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      process.exit(1);
+    }
   } catch (error) {
     if (error.data.type === 'error') {
       console.log(error.data.message);
       await daemon.delete();
       process.exit(1);
     }
-  }
-  
-  if (data.data.status === 'online') {
-    const client = {
-      id: clientId,
-      name: clientName,
-      options: options,
-      processId: processId,
-      process: data.process,
-      status: 'online',
-      at: data.at
-    }
-    clients.push(client);
-    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
-    process.exit(1);
   }
 }
 
@@ -125,27 +124,26 @@ const startClient = async (clientName = 'client_0') => {
   
   try {
     const data = await daemon.start();
+    if (data.data.status === 'online') {
+      client.status = 'online';
+      clients = clients.map(c => {
+        if (c.name === clientName) {
+          client.process = data.process;
+          client.at = data.at;
+          return client;
+        }
+        return c;
+      });
+      console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
+      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      process.exit(1);
+    }
   } catch (error) {
     if (error.data.type === 'error') {
       console.log(error.data.message);
       await daemon.stop();
       process.exit(1);
     }
-  }
-
-  if (data.data.status === 'online') {
-    client.status = 'online';
-    clients = clients.map(c => {
-      if (c.name === clientName) {
-        client.process = data.process;
-        client.at = data.at;
-        return client;
-      }
-      return c;
-    });
-    console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
-    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
-    process.exit(1);
   }
 }
 
@@ -214,25 +212,24 @@ const restartClient = async (clientName = 'client_0') => {
   
   try {
     const data = await daemon.start();
+    if (data.data.status === 'online') {
+      client.status = 'online';
+      clients = clients.map(c => {
+        if (c.name === clientName) {
+          return client;
+        }
+        return c;
+      });
+      console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
+      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      process.exit(1);
+    }
   } catch (error) {
     if (error.data.type === 'error') {
       console.log(error.data.message);
       await daemon.stop();
       process.exit(1);
     }
-  }
-
-  if (data.data.status === 'online') {
-    client.status = 'online';
-    clients = clients.map(c => {
-      if (c.name === clientName) {
-        return client;
-      }
-      return c;
-    });
-    console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
-    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
-    process.exit(1);
   }
 }
 
