@@ -1,9 +1,11 @@
+const { output } = require('./Utils');
+
 module.exports = class Whatsbot {
-  constructor(client, clientName, clientId, config = '') {
+  constructor(client, clientName, clientId, config = 'whatsbot.config.js') {
     try {
-      this.config = config !== '' ? require(`${process.cwd()}/${config}`) : require(`${process.cwd()}/whatsbot.config.js`);
+      this.config = require(`${process.cwd()}/${config}`);
     } catch (error) {
-      console.error(error, `No whatsbot.config.js file found!`);
+      output({message: `\x1b[31mError: \x1b[0m${error.message}\nError in configuration file '${process.cwd()}/${config}'`}, 'error');
     }
     this.router = this.config.router;
     this.client = client;

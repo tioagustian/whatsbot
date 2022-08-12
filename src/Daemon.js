@@ -16,7 +16,7 @@ exports.Daemon = class Daemon {
         }
         pm2.start({
           script: `${__dirname}/process.js`,
-          name: that.options.clientId,
+          name: that.options.processId,
           args: [
             'start',
             that.options.clientName,
@@ -24,11 +24,7 @@ exports.Daemon = class Daemon {
           ],
           exec_mode: 'cluster_mode',
           instances: 1,
-        }, function (err, apps) {
-          if (err) {
-            reject(err);
-            return pm2.disconnect();
-          }
+          autorestart: false,
         });
       })
       pm2.launchBus(function(err, pm2_bus) {
@@ -37,6 +33,8 @@ exports.Daemon = class Daemon {
             resolve(packet);
           } else if (packet.data.type == 'qr') {
             console.log(packet.data.qr);
+          } else if(packet.data.type == 'error') {
+            reject(packet);
           } else {
             console.log(packet.data.message);
           }
@@ -53,7 +51,7 @@ exports.Daemon = class Daemon {
           reject(err);
           process.exit(2);
         }
-        pm2.stop(that.options.clientId, function (err) {
+        pm2.stop(that.options.processId, function (err) {
           if (err) {
             pm2.disconnect();
             reject(err);
@@ -72,7 +70,7 @@ exports.Daemon = class Daemon {
           reject(err);
           process.exit(2);
         }
-        pm2.restart(that.options.clientId, function (err) {
+        pm2.restart(that.options.processId, function (err) {
           if (err) {
             pm2.disconnect();
             reject(err);
@@ -84,10 +82,31 @@ exports.Daemon = class Daemon {
               resolve(packet);
             } else if (packet.data.type == 'qr') {
               console.log(packet.data.qr);
+            } else if(packet.data.type == 'error') {
+              reject(packet);
             } else {
               console.log(packet.data.message);
             }
           })
+        });
+      })
+    });
+  }
+
+  async delete() {
+    return new Promise((resolve, reject) => {
+      const that = this;
+      pm2.connect(function (err) {
+        if (err) {
+          reject(err);
+          process.exit(2);
+        }
+        pm2.delete(that.options.processId, function (err) {
+          if (err) {
+            pm2.disconnect();
+            reject(err);
+          }
+          resolve({data: {status: 'offline'}});
         });
       })
     });
