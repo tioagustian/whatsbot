@@ -1,4 +1,5 @@
 const Chat = require('./Chat');
+const { Buttons } = require('whatsapp-web.js');
 module.exports = class Router {
   constructor(handler) {
     this.handler = handler;
@@ -37,23 +38,13 @@ module.exports = class Router {
         await this.sleep();
         await this.handler.sendMessage(message.from, this.config.welcomeMessage.message);
         if (this.config.welcomeMessage.showMenu) {
-          await this.handler.sendMessage(message.from, this.config.router.map((item, index) => `• ${item.keyword}, ${item.description}`).join('\n'), this.config.router.map(item => item.keyword));
+          // await this.handler.sendMessage(message.from, this.config.router.map((item, index) => `• ${item.keyword}, ${item.description}`).join('\n'), this.config.router.map(item => item.keyword));
+          await this.handler.sendMessage(message.from, new Buttons(`Please select menu`, this.config.router.map(item => (
+            {id: item.id, body: item.description}
+          )) ), this.config.router.map(item => item.keyword));
         }
       }
       return "Sent!";
-      // chats.push({
-      //   id: Object.keys(chats).length,
-      //   from: message.from,
-      //   lastKeyword: 'menu',
-      //   lastMessage: message.body,
-      //   lastMessageTime: new Date(),
-      //   lastMessageSent: sent.message,
-      //   lastMessageSentTime: new Date(),
-      //   nextAction: '',
-      //   options: sent.options
-      // });
-      // this.handler.saveContacts(message.from);
-      // return this.handler.saveChats(chats);
     } else {
       chats.map((item, index) => {
         if (item.from === message.from) {
@@ -77,20 +68,6 @@ module.exports = class Router {
       } else {
         await this.handler.reply("Sorry, I don't understand you!");
       }
-
-      // chats.map((item, index) => {
-      //   if (item.from === message.from) {
-      //     chats[index].from = message.from;
-      //     chats[index].lastKeyword = keyword;
-      //     chats[index].lastMessage = message.body;
-      //     chats[index].lastMessageTime = new Date();
-      //     chats[index].lastMessageSent = sent.message;
-      //     chats[index].lastMessageSentTime = new Date();
-      //     chats[index].nextAction = '';
-      //     chats[index].options = sent.options;
-      //   }
-      // });
-      // return this.handler.saveChats(chats);
       return "Sent!";
     }
   }

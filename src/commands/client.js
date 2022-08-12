@@ -10,7 +10,6 @@ const newClient = async (clientName = '', options) => {
   try {
     clients = require(`${__dirname}/../../clients.json`);
   } catch (error) {
-    console.log(`If there isn't a clients.json file, we'll make one for you.`);
     fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients));
   }
   
@@ -20,9 +19,9 @@ const newClient = async (clientName = '', options) => {
         type: 'input',
         name: 'clientName',
         message: 'Client name:',
-        default: 'client_' + Object.keys(clients).length,
+        default: 'client-' + Object.keys(clients).length,
         validate: function(value) {
-          const pass = value.match(/^[a-zA-Z0-9_]+$/);
+          const pass = value.match(/^[a-zA-Z0-9_-]+$/);
           if (pass) {
             return true;
           }
@@ -61,19 +60,31 @@ const newClient = async (clientName = '', options) => {
   }
 
   console.log(`Starting client '${clientName}'...`);
-  const clientId = 'whatsbot_client_' + Object.keys(clients).length;
-  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  const clientId = `${clientName}-whatsbot`;
+  const processId = `${Date.now()}@whatsbot-process`;
+  const daemon = new Daemon({processId: processId, clientId: clientId, clientName: clientName, options: options});
   process.on('SIGINT', async function() {
     await daemon.stop();
     console.log('Aborted!');
     process.exit();
   });
-  const data = await daemon.start();
+
+  try {
+    const data = await daemon.start();
+  } catch (error) {
+    if (error.data.type === 'error') {
+      console.log(error.data.message);
+      await daemon.delete();
+      process.exit(1);
+    }
+  }
+  
   if (data.data.status === 'online') {
     const client = {
       id: clientId,
       name: clientName,
       options: options,
+      processId: processId,
       process: data.process,
       status: 'online',
       at: data.at
@@ -104,13 +115,24 @@ const startClient = async (clientName = 'client_0') => {
   console.log(`Starting client '${client.name}'...`);
   const clientId = client.id;
   const options = client.options;
-  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  const processId = client.processId;
+  const daemon = new Daemon({processId: processId, clientId: clientId, clientName: clientName, options: options});
   process.on('SIGINT', async function() {
     await daemon.stop();
     console.log('Aborted!');
     process.exit();
   });
-  const data = await daemon.start();
+  
+  try {
+    const data = await daemon.start();
+  } catch (error) {
+    if (error.data.type === 'error') {
+      console.log(error.data.message);
+      await daemon.stop();
+      process.exit(1);
+    }
+  }
+
   if (data.data.status === 'online') {
     client.status = 'online';
     clients = clients.map(c => {
@@ -148,7 +170,8 @@ const stopClient = async (clientName = 'client_0') => {
   console.log(`Stoping client '${client.name}'...`);
   const clientId = client.id;
   const options = client.options;
-  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  const processId = client.processId;
+  const daemon = new Daemon({processId: processId, clientId: clientId, clientName: clientName, options: options});
   const data = await daemon.stop();
   if (data.data.status === 'offline') {
     client.status = 'offline';
@@ -181,13 +204,24 @@ const restartClient = async (clientName = 'client_0') => {
   console.log(`Restarting client '${client.name}'...`);
   const clientId = client.id;
   const options = client.options;
-  const daemon = new Daemon({clientId: clientId, clientName: clientName, options: options});
+  const processId = client.processId;
+  const daemon = new Daemon({processId: processId, clientId: clientId, clientName: clientName, options: options});
   process.on('SIGINT', async function() {
     await daemon.stop();
     console.log('Aborted!');
     process.exit();
   });
-  const data = await daemon.restart();
+  
+  try {
+    const data = await daemon.start();
+  } catch (error) {
+    if (error.data.type === 'error') {
+      console.log(error.data.message);
+      await daemon.stop();
+      process.exit(1);
+    }
+  }
+
   if (data.data.status === 'online') {
     client.status = 'online';
     clients = clients.map(c => {

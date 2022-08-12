@@ -28,7 +28,7 @@ if(options.auth === false) {
 }
 client.on('qr', qr => {
   qrcode.generate(qr, {small: true}, function(qrcode) {
-    output({type: 'qr', qr: qrcode});
+    output({qr: qrcode}, 'qr');
   });
 });
 
@@ -42,7 +42,7 @@ client.on('ready', () => {
 const handler = new Handler(new Whatsbot(client, clientName, clientId));
 
 client.on('message', message => {
-  output(`\x1b[33mwhatsbot@${clientName}:\x1b[0m ${message.from} say ${message.body}`);
+  output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} say ${message.body}`);
   handler.handle(message);
 });
 client.initialize();
