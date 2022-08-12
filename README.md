@@ -58,7 +58,4 @@ Give a ⭐️ if this project helped you!
 ## 📝 License
 
 Copyright © 2022 [Tio Agustian](https://github.com/tioagustian).<br />
-This project is [ISC](https://github.com/tioagustian/whatsbot/blob/master/LICENSE) licensed.
-
-***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+This project is [MIT](https://github.com/tioagustian/whatsbot/blob/master/LICENSE) licensed.
