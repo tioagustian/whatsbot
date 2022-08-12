@@ -38,10 +38,10 @@ module.exports = class Router {
         await this.sleep();
         await this.handler.sendMessage(message.from, this.config.welcomeMessage.message);
         if (this.config.welcomeMessage.showMenu) {
-          // await this.handler.sendMessage(message.from, this.config.router.map((item, index) => `• ${item.keyword}, ${item.description}`).join('\n'), this.config.router.map(item => item.keyword));
-          await this.handler.sendMessage(message.from, new Buttons(`Please select menu`, this.config.router.map(item => (
-            {id: item.id, body: item.description}
-          )) ), this.config.router.map(item => item.keyword));
+          await this.handler.sendMessage(message.from, this.config.router.map((item, index) => `• ${item.keyword}, ${item.description}`).join('\n'), this.config.router.map(item => item.keyword));
+          // await this.handler.sendMessage(message.from, new Buttons(`Please select menu`, this.config.router.map(item => (
+          //   {id: item.id, body: item.description}
+          // )) ), this.config.router.map(item => item.keyword));
         }
       }
       return "Sent!";
