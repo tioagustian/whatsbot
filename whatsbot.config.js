@@ -1,6 +1,7 @@
-const test = require('./commands/test');
+const example = require('./commands/example');
 
 module.exports = {
+  cpm: 600,
   welcomeMessage: {
     enabled: true,
     message: 'Welcome to WhatsBot!',
@@ -13,9 +14,10 @@ module.exports = {
       showMenu: true
     },
     {
-      keyword: 'test',
-      description: 'Test',
-      action: test.justTest
+      keyword: 'ping',
+      description: 'Ping!',
+      accept: 'text',
+      action: example.ping
     }
   ]
 };
