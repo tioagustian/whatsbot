@@ -30,6 +30,7 @@ module.exports = class Handler {
   async reply(message, options = {}, next = null) {
     this.chat.sendStateTyping();
     await this.simulateTyping(message);
+    await this.chat.clearState();
     return new Promise((resolve, reject) => {
       const from = this.message.from;
       this.message.reply(message);
@@ -50,6 +51,7 @@ module.exports = class Handler {
   async sendMessage(from, message, options = {}, next = null) {
     this.chat.sendStateTyping();
     await this.simulateTyping(message);
+    await this.chat.clearState();
     return new Promise((resolve) => {
       this.client.sendMessage(from, message);
       const chats = this.chats;
@@ -67,13 +69,28 @@ module.exports = class Handler {
 
   }
 
+  async downloadMedia() {
+    return await this.message.downloadMedia();
+  }
+
+  async getQuotedMessage() {
+    return await this.message.getQuotedMessage();
+  }
+
+  async backToMenu() {
+    await this.sendMessage(this.message.from, `Please select menu:\n\n`+this.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.router.map(item => item.keyword));
+  }
+
+  async createMenu(title = 'Please select menu:', options = [], footer = '\n', next = null) {
+    await this.sendMessage(this.message.from, `${title}\n\n`+options.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n')+footer, options.map(item => item.keyword), next);
+  }
+
   getChats() {
     return this.chats;
   }
 
   saveChats(chats) {
     this.chats = chats;
-    // fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-chats.json`, JSON.stringify(chats, null, 2));
   }
 
   getContacts() {
@@ -82,18 +99,18 @@ module.exports = class Handler {
 
   saveContacts(contact) {
     this.contacts.push(contact);
-    fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-contacts.json`, JSON.stringify(this.contacts, null, 2));
   }
 
   simulateTyping(message) {
-    const CPms = 1000 / (this.config.cpm/60);
+    const cpm = this.config.cpm * 2;
+    const CPms = 1000 / (cpm/60);
     const ms = message.length * CPms;
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
   }
 
-  sleep(ms = 100) {
+  sleep(ms = 1000) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });

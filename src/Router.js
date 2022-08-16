@@ -17,9 +17,11 @@ module.exports = class Router {
       chats.push({
         id: Object.keys(chats).length,
         from: message.from,
-        lastKeyword: 'menu',
-        lastMessage: message.body,
-        lastMessageTime: new Date()
+        keyword: 'menu',
+        body: message.body,
+        hasMedia: message.hasMedia,
+        hasQuotedMsg: message.hasQuotedMsg,
+        recievedAt: new Date()
       });
 
       this.handler.saveContacts(message.from);
@@ -41,9 +43,11 @@ module.exports = class Router {
       chats.map((item, index) => {
         if (item.from === message.from) {
           chats[index].from = message.from;
-          chats[index].lastKeyword = keyword;
-          chats[index].lastMessage = message.body;
-          chats[index].lastMessageTime = new Date();
+          chats[index].keyword = keyword;
+          chats[index].body = message.body;
+          chats[index].hasMedia = message.hasMedia;
+          chats[index].hasQuotedMsg = message.hasQuotedMsg;
+          chats[index].recievedAt = new Date();
         }
       });
       this.handler.saveChats(chats);
