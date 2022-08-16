@@ -41,8 +41,8 @@ client.on('ready', () => {
 
 const handler = new Handler(new Whatsbot(client, clientName, clientId));
 
-client.on('message', message => {
+client.on('message', async message => {
   output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} say ${message.body}`);
-  handler.handle(message);
+  await handler.handle(message);
 });
 client.initialize();
