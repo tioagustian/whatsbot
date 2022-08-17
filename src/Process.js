@@ -42,7 +42,15 @@ client.on('ready', () => {
 const handler = new Handler(new Whatsbot(client, clientName, clientId));
 
 client.on('message', async message => {
-  output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} say ${message.body}`);
-  await handler.handle(message);
+  
+  if (message.hasMedia) {
+    output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} send media`);
+    const media = await message.downloadMedia();
+    await handler.handleMedia(message, media);
+  } else {
+    output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} say ${message.body}`);
+    await handler.handle(message);
+  }
+  
 });
 client.initialize();
