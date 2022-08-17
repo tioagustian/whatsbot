@@ -9,18 +9,36 @@ module.exports = class Handler {
     this.clientId = whatsbot.clientId;
     this.chats = whatsbot.chats;
     this.contacts = whatsbot.contacts;
-    this.router = whatsbot.router;
     this.config = whatsbot.config;
-    this.chat = {};
+    this.media = {};
+    this.router = whatsbot.router;
+    this.function = {
+      backToMenu: this.backToMenu.bind(this),
+      createMenu: this.createMenu.bind(this),
+      downloadMedia: this.downloadMedia.bind(this),
+      getChats: this.getChats.bind(this),
+      getContacts: this.getContacts.bind(this)
+    }
   }
 
   async handle(message) {
     try {
       this.message = message;
-      const router = new Router(this);
       this.chat = await message.getChat();
+      const router = new Router(this);
       await this.sleep();
-      await this.chat.sendSeen();
+      await router.callAction();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async handleMedia(message, media) {
+    try {
+      this.message = message;
+      this.chat = await message.getChat();
+      const router = new Router(this, media);
+      await this.sleep();
       await router.callAction();
     } catch (error) {
       console.error(error);
@@ -28,12 +46,14 @@ module.exports = class Handler {
   }
 
   async reply(message, options = {}, next = null) {
+    await this.sleep();
+    await this.chat.sendSeen();
     this.chat.sendStateTyping();
     await this.simulateTyping(message);
     await this.chat.clearState();
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const from = this.message.from;
-      this.message.reply(message);
+      await this.client.sendMessage(this.message.from, message, { quotedMessageId: this.message.id._serialized });
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === from) {
@@ -49,11 +69,13 @@ module.exports = class Handler {
   }
 
   async sendMessage(from, message, options = {}, next = null) {
+    await this.sleep();
+    await this.chat.sendSeen();
     this.chat.sendStateTyping();
     await this.simulateTyping(message);
     await this.chat.clearState();
-    return new Promise((resolve) => {
-      this.client.sendMessage(from, message);
+    return new Promise(async (resolve) => {
+      await this.client.sendMessage(from, message);
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === from) {
@@ -70,7 +92,11 @@ module.exports = class Handler {
   }
 
   async downloadMedia() {
-    return await this.message.downloadMedia();
+    return new Promise(async (resolve, reject) => {
+      resolve(this.media);
+    }).catch(error => {
+      console.error(error);
+    });
   }
 
   async getQuotedMessage() {
@@ -78,6 +104,7 @@ module.exports = class Handler {
   }
 
   async backToMenu() {
+    this.chat.sendStateTyping();
     await this.sendMessage(this.message.from, `Please select menu:\n\n`+this.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.router.map(item => item.keyword));
   }
 
@@ -91,6 +118,7 @@ module.exports = class Handler {
 
   saveChats(chats) {
     this.chats = chats;
+    // fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-chats.json`, JSON.stringify(chats, null, 2));
   }
 
   getContacts() {
@@ -99,6 +127,7 @@ module.exports = class Handler {
 
   saveContacts(contact) {
     this.contacts.push(contact);
+    // fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-contacts.json`, JSON.stringify(this.contacts, null, 2));
   }
 
   simulateTyping(message) {
@@ -110,7 +139,7 @@ module.exports = class Handler {
     });
   }
 
-  sleep(ms = 1000) {
+  sleep(ms = 500) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
