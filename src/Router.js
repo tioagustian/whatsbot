@@ -34,7 +34,7 @@ module.exports = class Router {
         
         await this.handler.sendMessage(message.from, this.handler.config.welcomeMessage.message);
         if (this.handler.config.welcomeMessage.showMenu) {
-          await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.handler.config.router.map(item => item.keyword));
+          await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'));
         }
       }
       return "Sent!";
@@ -70,7 +70,7 @@ module.exports = class Router {
         }
       } else {
         await this.handler.reply("Sorry, I don't understand you!");
-        await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.handler.config.router.map(item => item.keyword));
+        await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'));
         return "Sent!";
       }
     }

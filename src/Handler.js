@@ -17,7 +17,11 @@ module.exports = class Handler {
       createMenu: this.createMenu.bind(this),
       downloadMedia: this.downloadMedia.bind(this),
       getChats: this.getChats.bind(this),
-      getContacts: this.getContacts.bind(this)
+      getContacts: this.getContacts.bind(this),
+      reply: this.reply.bind(this),
+      sendMessage: this.sendMessage.bind(this),
+      sendSeen: this.sendSeen.bind(this),
+      sendStateTyping: this.sendStateTyping.bind(this),
     }
   }
 
@@ -51,9 +55,10 @@ module.exports = class Handler {
     this.chat.sendStateTyping();
     await this.simulateTyping(message);
     await this.chat.clearState();
+    options.quotedMessageId = this.message.id._serialized;
     return new Promise(async (resolve, reject) => {
       const from = this.message.from;
-      await this.client.sendMessage(this.message.from, message, { quotedMessageId: this.message.id._serialized });
+      await this.client.sendMessage(this.message.from, message, options);
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === from) {
@@ -75,7 +80,7 @@ module.exports = class Handler {
     await this.simulateTyping(message);
     await this.chat.clearState();
     return new Promise(async (resolve) => {
-      await this.client.sendMessage(from, message);
+      await this.client.sendMessage(from, message, options);
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === from) {
@@ -88,7 +93,14 @@ module.exports = class Handler {
       this.saveChats(chats);
       resolve({from, message, options, next});
     });
+  }
 
+  async sendSeen() {
+    return await this.chat.sendSeen();
+  }
+  
+  sendStateTyping() {
+    return this.chat.sendStateTyping();
   }
 
   async downloadMedia() {
@@ -118,7 +130,6 @@ module.exports = class Handler {
 
   saveChats(chats) {
     this.chats = chats;
-    // fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-chats.json`, JSON.stringify(chats, null, 2));
   }
 
   getContacts() {
