@@ -7,6 +7,7 @@ module.exports = {
     message: 'Welcome to WhatsBot!',
     showMenu: true,
   },
+  errorMessage: "Sorry, I don't understand that command!",
   router: [
     {
       keyword: 'help',

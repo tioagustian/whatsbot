@@ -36,6 +36,10 @@ module.exports = class Router {
         if (this.handler.config.welcomeMessage.showMenu) {
           await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'));
         }
+
+        if (typeof this.handler.config.welcomeMessage.action === 'function') {
+          await this.handler.config.welcomeMessage.action(chats.find(item => item.from === message.from));
+        }
       }
       return "Sent!";
     } else {
@@ -59,17 +63,18 @@ module.exports = class Router {
         if (route.showMenu){
           await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*, ${item.description}`).join('\n'), this.handler.config.router.map(item => item.keyword));
         } else if (route.action && typeof route.action === 'function') {
-          await route.action(this.handler, chats.find(item => item.from === message.from));
+          await route.action(chats.find(item => item.from === message.from));
         }
         
         return "Sent!";
       } else if (typeof chat != 'undefined' && chat.next) {
         if (typeof chat.next === 'function') {
-          await chat.next(this.handler, chats.find(item => item.from === message.from));
+          await chat.next(chats.find(item => item.from === message.from));
           return "Sent!";
         }
       } else {
-        await this.handler.reply("Sorry, I don't understand you!");
+        const error = this.handler.config.errorMessage || "Sorry, I don't understand that command!";
+        await this.handler.reply(error);
         await this.handler.sendMessage(message.from, `Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'));
         return "Sent!";
       }

@@ -24,7 +24,7 @@
 ## Install
 
 ```sh
-npm install
+npm install @tioagustian/whatsbot
 ```
 
 ## Usage
@@ -33,17 +33,35 @@ npm install
 npx whatsbot install
 ```
 
-## Run tests
+## Creating new client
 
 ```sh
-npm run test
+npx whatsbot new
+```
+
+## Starting client
+
+```sh
+npx start yourclientname
+```
+
+## Retarting client
+
+```sh
+npx restart yourclientname
+```
+
+## Stoping client
+
+```sh
+npx stop yourclientname
 ```
 
 ## Author
 
 👤 **Tio Agustian**
 
-* Twitter: [@tio\_agst](https://twitter.com/tio\_agst)
+* Twitter: [@tio\_agst](https://twitter.com/tio_agst)
 * Github: [@tioagustian](https://github.com/tioagustian)
 * LinkedIn: [@tioagustian](https://linkedin.com/in/tioagustian)
 
