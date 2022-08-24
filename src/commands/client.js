@@ -90,6 +90,9 @@ const newClient = async (clientName = '', options) => {
       console.log(error.data.message);
       await daemon.delete();
       process.exit(1);
+    } else {
+      console.error(error);
+      process.exit(1);
     }
   }
 }
@@ -142,6 +145,9 @@ const startClient = async (clientName = 'client_0') => {
     if (error.data.type === 'error') {
       console.log(error.data.message);
       await daemon.stop();
+      process.exit(1);
+    } else {
+      console.error(error);
       process.exit(1);
     }
   }
@@ -228,6 +234,9 @@ const restartClient = async (clientName = 'client_0') => {
     if (error.data.type === 'error') {
       console.log(error.data.message);
       await daemon.stop();
+      process.exit(1);
+    } else {
+      console.error(error);
       process.exit(1);
     }
   }
