@@ -104,7 +104,7 @@ const startClient = async (clientName = 'client_0') => {
   }
   const client = clients.find(client => client.name === clientName);
   if(!client) {
-    console.log(`Client '${client.name}' does not exist!`);
+    console.log(`Client '${clientName}' does not exist!`);
     process.exit(1);
   }
   if (client.status === 'online') {
@@ -157,7 +157,7 @@ const stopClient = async (clientName = 'client_0') => {
   }
   const client = clients.find(client => client.name === clientName);
   if(!client) {
-    console.log(`Client '${client.name}' does not exist!`);
+    console.log(`Client '${clientName}' does not exist!`);
     process.exit(1);
   }
   if (client.status === 'offline') {
@@ -195,7 +195,7 @@ const restartClient = async (clientName = 'client_0') => {
   }
   const client = clients.find(client => client.name === clientName);
   if(!client) {
-    console.log(`Client '${client.name}' does not exist!`);
+    console.log(`Client '${clientName}' does not exist!`);
     process.exit(1);
   }
 
