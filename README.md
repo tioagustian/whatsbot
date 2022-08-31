@@ -42,19 +42,19 @@ npx whatsbot new
 ## Starting client
 
 ```sh
-npx start yourclientname
+npx whatsbot start yourclientname
 ```
 
 ## Retarting client
 
 ```sh
-npx restart yourclientname
+npx whatsbot restart yourclientname
 ```
 
 ## Stoping client
 
 ```sh
-npx stop yourclientname
+npx whatsbot stop yourclientname
 ```
 
 ## Author
