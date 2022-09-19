@@ -26,14 +26,14 @@ module.exports = class Router {
         
         chats.map((item, index) => {
           if (item.from === message.from) {
-            chats[index] = Object.assign(chats[index], this.handler.function);
-            chats[index].id = message.id;
-            chats[index].from = message.from;
+            chats[index] = Object.assign(chats[index], this.handler.function, message);
             chats[index].keyword = keyword;
-            chats[index].body = message.body;
-            chats[index].hasMedia = message.hasMedia;
+            // chats[index].id = message.id;
+            // chats[index].from = message.from;
+            // chats[index].body = message.body;
+            // chats[index].hasMedia = message.hasMedia;
+            // chats[index].hasQuotedMsg = message.hasQuotedMsg;
             chats[index].media = media;
-            chats[index].hasQuotedMsg = message.hasQuotedMsg;
             chats[index].recievedAt = new Date();
           }
         });
@@ -65,12 +65,13 @@ module.exports = class Router {
   async sendWelcomeMessage(message, media, chats) {
     const chat = {
       ...this.handler.function,
-      id: message.id,
-      from: message.from,
+      ...message,
       keyword: 'menu',
-      body: message.body,
-      hasMedia: message.hasMedia,
-      hasQuotedMsg: message.hasQuotedMsg,
+      // id: message.id,
+      // from: message.from,
+      // body: message.body,
+      // hasMedia: message.hasMedia,
+      // hasQuotedMsg: message.hasQuotedMsg,
       media: media,
       recievedAt: new Date(),
     }

@@ -15,7 +15,7 @@ exports.Daemon = class Daemon {
           process.exit(2);
         }
         pm2.start({
-          script: `${__dirname}/process.js`,
+          script: `${__dirname}/Process.js`,
           name: that.options.processId,
           args: [
             'start',
