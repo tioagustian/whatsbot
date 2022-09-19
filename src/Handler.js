@@ -1,5 +1,6 @@
 const Router = require('./Router');
 const fs = require('fs');
+const moment = require('moment');
 
 module.exports = class Handler {
   constructor(whatsbot) {
@@ -12,16 +13,25 @@ module.exports = class Handler {
     this.config = whatsbot.config;
     this.media = {};
     this.router = whatsbot.router;
+    moment.locale(this.config.locale || 'en');
     this.function = {
       backToMenu: this.backToMenu.bind(this),
       createMenu: this.createMenu.bind(this),
       downloadMedia: this.downloadMedia.bind(this),
       getChats: this.getChats.bind(this),
       getContacts: this.getContacts.bind(this),
+      getContact: this.getContact.bind(this),
+      getRouter: this.getRouter.bind(this),
       reply: this.reply.bind(this),
       sendMessage: this.sendMessage.bind(this),
       sendSeen: this.sendSeen.bind(this),
       sendStateTyping: this.sendStateTyping.bind(this),
+      saveChats: this.saveChats.bind(this),
+      saveContacts: this.saveContacts.bind(this),
+      updateContact: this.updateContact.bind(this),
+      plugins: {
+        moment: moment,
+      }
     }
   }
 
@@ -50,6 +60,7 @@ module.exports = class Handler {
   }
 
   async reply(message, options = {}, next = null) {
+    await this.chat.clearState();
     await this.sleep();
     await this.chat.sendSeen();
     this.chat.sendStateTyping();
@@ -58,28 +69,6 @@ module.exports = class Handler {
     options.quotedMessageId = this.message.id._serialized;
     return new Promise(async (resolve, reject) => {
       const from = this.message.from;
-      await this.client.sendMessage(this.message.from, message, options);
-      const chats = this.chats;
-      chats.map((item, index) => {
-        if (item.from === from) {
-          chats[index].lastMessageSent = message;
-          chats[index].lastMessageSentTime = new Date();
-          chats[index].next = next;
-          chats[index].options = options;
-        }
-      });
-      this.saveChats(chats);
-      resolve({from, message, options, next});
-    });
-  }
-
-  async sendMessage(from, message, options = {}, next = null) {
-    await this.sleep();
-    await this.chat.sendSeen();
-    this.chat.sendStateTyping();
-    await this.simulateTyping(message);
-    await this.chat.clearState();
-    return new Promise(async (resolve) => {
       await this.client.sendMessage(from, message, options);
       const chats = this.chats;
       chats.map((item, index) => {
@@ -88,10 +77,63 @@ module.exports = class Handler {
           chats[index].lastMessageSentTime = new Date();
           chats[index].next = next;
           chats[index].options = options;
+          chats[index].timeout = new Date().getTime() + this.config.timeout;
         }
       });
       this.saveChats(chats);
       resolve({from, message, options, next});
+    });
+  }
+
+  async sendMessage(message, options = {}, next = null) {
+    let from = this.message.from;
+    await this.chat.clearState();
+    await this.sleep();
+    await this.chat.sendSeen();
+    this.chat.sendStateTyping();
+    await this.simulateTyping(message);
+    await this.chat.clearState();
+    return new Promise(async (resolve) => {
+      await this.client.sendMessage(from, message, options);
+      const chats = this.chats;
+      let i = 0;
+      chats.map((item, index) => {
+        if (item.from === from) {
+          chats[index].lastMessageSent = message;
+          chats[index].lastMessageSentTime = new Date();
+          chats[index].next = next;
+          chats[index].options = options;
+          chats[index].timeout = new Date().getTime() + this.config.timeout;
+          i = index;
+        }
+      });
+      this.saveChats(chats);
+      console.log(chats[i]);
+      resolve({from, message, options, next});
+    });
+  }
+
+  async sendMessageTo(to, message, options = {}, next = null) {
+    await this.chat.clearState();
+    await this.sleep();
+    await this.chat.sendSeen();
+    this.chat.sendStateTyping();
+    await this.simulateTyping(message);
+    await this.chat.clearState();
+    return new Promise(async (resolve) => {
+      await this.client.sendMessage(to, message, options);
+      const chats = this.chats;
+      chats.map((item, index) => {
+        if (item.from === to) {
+          chats[index].lastMessageSent = message;
+          chats[index].lastMessageSentTime = new Date();
+          chats[index].next = next;
+          chats[index].options = options;
+          chats[index].timeout = new Date().getTime() + this.config.timeout;
+        }
+      });
+      this.saveChats(chats);
+      resolve({to, message, options, next});
     });
   }
 
@@ -117,11 +159,11 @@ module.exports = class Handler {
 
   async backToMenu() {
     this.chat.sendStateTyping();
-    await this.sendMessage(this.message.from, `Please select menu:\n\n`+this.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.router.map(item => item.keyword));
+    await this.sendMessage(`Please select menu:\n\n`+this.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.router.map(item => item.keyword));
   }
 
-  async createMenu(title = 'Please select menu:', options = [], footer = '\n', next = null) {
-    await this.sendMessage(this.message.from, `${title}\n\n`+options.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n')+footer, options.map(item => item.keyword), next);
+  async createMenu(title = 'Please select menu:', footer = '\n', options = this.router, next = null) {
+    await this.sendMessage(`${title}\n\n`+options.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n')+footer, options.map(item => item.keyword), next);
   }
 
   getChats() {
@@ -132,25 +174,48 @@ module.exports = class Handler {
     this.chats = chats;
   }
 
+  deleteChat(from) {
+    const chats = this.chats;
+    this.chats.map((item, index) => {
+      if (item.from === from) {
+        chats.splice(index, 1);
+      }
+    });
+    this.saveChats(chats);
+  }
+
   getContacts() {
     return this.contacts;
   }
 
-  saveContacts(contact) {
-    this.contacts.push(contact);
-    // fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-contacts.json`, JSON.stringify(this.contacts, null, 2));
+  getContact(number = this.message.from) {
+    return this.contacts.find(item => item.number === number);
+  }
+
+  updateContact(id, data) {
+    this.contacts.update(id, data);
+  }
+
+  async saveContacts(contact) {
+    const default_ = await this.message.getContact();
+    this.contacts.push({number: contact, default_ : default_});
+  }
+
+  getRouter() {
+    return this.router;
   }
 
   simulateTyping(message) {
+    const length = (message.length > 250) ? 250 : message.length;
     const cpm = this.config.cpm * 2;
     const CPms = 1000 / (cpm/60);
-    const ms = message.length * CPms;
+    const ms = length * CPms;
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
   }
 
-  sleep(ms = 500) {
+  sleep(ms = this.config.delay || 500) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
