@@ -8,7 +8,13 @@ module.exports = class Whatsbot {
     } catch (error) {
       output({message: `\x1b[31mError: \x1b[0m${error.message}\nError in configuration file '${process.cwd()}/${config}'`}, 'error');
     }
-
+    
+    if (this.config.saveContact) {
+      const contacts = require('./Contacts');
+      this.contacts = new contacts(clientId);
+    } else {
+      this.contacts = [];
+    }
     // if (!fs.existsSync(`${__dirname}/../logs/${clientId}-contacts.json`)) {
     //   fs.writeFileSync(`${__dirname}/../logs/${clientId}-contacts.json`, '[]');
     // }
@@ -16,7 +22,6 @@ module.exports = class Whatsbot {
     // this.chats = require(`${__dirname}/../logs/${clientId}-chats.js`);
     this.chats = [];
     // this.contacts = require(`${__dirname}/../logs/${clientId}-contacts.json`);
-    this.contacts = [];
     this.router = this.config.router;
     this.client = client;
     this.clientName = clientName;
