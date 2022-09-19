@@ -1,5 +1,4 @@
 const Router = require('./Router');
-const fs = require('fs');
 const moment = require('moment');
 
 module.exports = class Handler {
@@ -108,7 +107,6 @@ module.exports = class Handler {
         }
       });
       this.saveChats(chats);
-      console.log(chats[i]);
       resolve({from, message, options, next});
     });
   }
