@@ -13,17 +13,17 @@ let client = [];
 if(options.auth === false) {
   client = new Client({
     authStrategy: new NoAuth(),
-    puppeteer: { handleSIGINT: false}
+    puppeteer: { handleSIGINT: false, args: ['--no-sandbox']}
   });
 } else if(options.auth === 'legacy') {
   client = new Client({
     authStrategy: new LegacySessionAuth(),
-    puppeteer: { handleSIGINT: false}
+    puppeteer: { handleSIGINT: false, args: ['--no-sandbox']}
   });
 } else {
   client = new Client({
     authStrategy: new LocalAuth({clientId: clientId}),
-    puppeteer: { handleSIGINT: false}
+    puppeteer: { handleSIGINT: false, args: ['--no-sandbox']}
   });
 }
 client.on('qr', qr => {

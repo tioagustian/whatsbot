@@ -1,12 +1,14 @@
 const fs = require('fs');
 module.exports = class Contacts {
-  constructor(clientId) {
+  constructor(clientId, config) {
     this.clientId = clientId;
-    if (!fs.existsSync(`${__dirname}/../logs/${this.clientId}-contacts.json`)) {
+    this.config = config;
+    this.logDir = this.config.logDir ? `${process.cwd()}/${this.config.logDir}` : `${process.cwd()}/.whatsbot/logs`;
+    if (!fs.existsSync(`${this.logDir}/${this.clientId}-contacts.json`)) {
       this.contacts = [];
-      fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-contacts.json`, '[]');
+      fs.writeFileSync(`${this.logDir}/${this.clientId}-contacts.json`, '[]');
     } else {
-      this.contacts = require(`${__dirname}/../logs/${this.clientId}-contacts.json`);
+      this.contacts = require(`${this.logDir}/${this.clientId}-contacts.json`);
     }
   }
   
@@ -19,7 +21,7 @@ module.exports = class Contacts {
   }
   
   saveContacts() {
-    fs.writeFileSync(`${__dirname}/../logs/${this.clientId}-contacts.json`, JSON.stringify(this.contacts, null, 2));
+    fs.writeFileSync(`${this.logDir}/${this.clientId}-contacts.json`, JSON.stringify(this.contacts, null, 2));
   }
 
   push(contact) {

@@ -7,10 +7,15 @@ const { Daemon } = require('../Daemon');
 const newClient = async (clientName = '', options) => {
   
   let clients = [];
+  
+  if (!fs.existsSync(`${process.cwd()}/.whatsbot`)) {
+    fs.mkdirSync(`${process.cwd()}/.whatsbot`);
+    fs.mkdirSync(`${process.cwd()}/.whatsbot/logs`);
+  }
   try {
-    clients = require(`${__dirname}/../../clients.json`);
+    clients = require(`${process.cwd()}/.whatsbot/clients.json`);
   } catch (error) {
-    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients));
+    fs.writeFileSync(`${process.cwd()}/.whatsbot/clients.json`, JSON.stringify(clients));
   }
   
   if (clientName === '') {
@@ -82,7 +87,7 @@ const newClient = async (clientName = '', options) => {
         at: data.at
       }
       clients.push(client);
-      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      fs.writeFileSync(`${process.cwd()}/.whatsbot/clients.json`, JSON.stringify(clients, null, 2));
       process.exit(1);
     }
   } catch (error) {
@@ -100,7 +105,7 @@ const newClient = async (clientName = '', options) => {
 const startClient = async (clientName = 'client_0') => {
   let clients = [];
   try {
-    clients = require(`${__dirname}/../../clients.json`);
+    clients = require(`${process.cwd()}/.whatsbot/clients.json`);
   } catch (error) {
     console.log(`No clients file found!`);
     process.exit(1);
@@ -138,7 +143,7 @@ const startClient = async (clientName = 'client_0') => {
         return c;
       });
       console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
-      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      fs.writeFileSync(`${process.cwd()}/.whatsbot/clients.json`, JSON.stringify(clients, null, 2));
       process.exit(1);
     }
   } catch (error) {
@@ -156,7 +161,7 @@ const startClient = async (clientName = 'client_0') => {
 const stopClient = async (clientName = 'client_0') => {
   let clients = [];
   try {
-    clients = require(`${__dirname}/../../clients.json`);
+    clients = require(`${process.cwd()}/.whatsbot/clients.json`);
   } catch (error) {
     console.log(`No clients file found!`);
     process.exit(1);
@@ -186,7 +191,7 @@ const stopClient = async (clientName = 'client_0') => {
       return c;
     });
     console.log(`Client '${clientName}' is now offline!`);
-    fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+    fs.writeFileSync(`${process.cwd()}/.whatsbot/clients.json`, JSON.stringify(clients, null, 2));
     process.exit(1);
   }
 }
@@ -194,7 +199,7 @@ const stopClient = async (clientName = 'client_0') => {
 const restartClient = async (clientName = 'client_0') => {
   let clients = [];
   try {
-    clients = require(`${__dirname}/../../clients.json`);
+    clients = require(`${process.cwd()}/.whatsbot/clients.json`);
   } catch (error) {
     console.log(`No clients file found!`);
     process.exit(1);
@@ -227,7 +232,7 @@ const restartClient = async (clientName = 'client_0') => {
         return c;
       });
       console.log(`\x1b[32mClient '${clientName}' is now online!\x1b[0m`);
-      fs.writeFileSync(`${__dirname}/../../clients.json`, JSON.stringify(clients, null, 2));
+      fs.writeFileSync(`${process.cwd()}/.whatsbot/clients.json`, JSON.stringify(clients, null, 2));
       process.exit(1);
     }
   } catch (error) {

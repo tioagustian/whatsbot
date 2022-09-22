@@ -22,8 +22,7 @@ module.exports = class Router {
         return this.sendWelcomeMessage(message, media, chats);
       } else if(chat.timeout && chat.timeout < new Date().getTime()) {
         return this.sendWelcomeMessage(message, media, chats);
-      } else {
-        
+      } else if (chat.status === 'sent') {
         chats.map((item, index) => {
           if (item.from === message.from) {
             chats[index] = Object.assign(chats[index], this.handler.function, message);
@@ -33,6 +32,7 @@ module.exports = class Router {
             // chats[index].body = message.body;
             // chats[index].hasMedia = message.hasMedia;
             // chats[index].hasQuotedMsg = message.hasQuotedMsg;
+            chats[index].status = 'recieved';
             chats[index].media = media;
             chats[index].recievedAt = new Date();
           }
@@ -72,6 +72,7 @@ module.exports = class Router {
       // body: message.body,
       // hasMedia: message.hasMedia,
       // hasQuotedMsg: message.hasQuotedMsg,
+      status: 'recieved',
       media: media,
       recievedAt: new Date(),
     }

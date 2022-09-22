@@ -9,6 +9,12 @@ const install = function () {
   if (!fs.existsSync(`${process.cwd()}/whatsbot.config.js`)) {
     fs.copyFileSync(`${__dirname}/../../example/whatsbot.config.js`, `${process.cwd()}/whatsbot.config.js`);
   }
+
+  if (!fs.existsSync(`${process.cwd()}/.whatsbot`)) {
+    fs.mkdirSync(`${process.cwd()}/.whatsbot`);
+    fs.mkdirSync(`${process.cwd()}/.whatsbot/logs`);
+  }
+  console.log('WhatsBot installed successfully!');
 }
 
 const commands = [
