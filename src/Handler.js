@@ -72,6 +72,7 @@ module.exports = class Handler {
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === from) {
+          chats[index].status = 'sent';
           chats[index].lastMessageSent = message;
           chats[index].lastMessageSentTime = new Date();
           chats[index].next = next;
@@ -98,6 +99,7 @@ module.exports = class Handler {
       let i = 0;
       chats.map((item, index) => {
         if (item.from === from) {
+          chats[index].status = 'sent';
           chats[index].lastMessageSent = message;
           chats[index].lastMessageSentTime = new Date();
           chats[index].next = next;
@@ -123,6 +125,7 @@ module.exports = class Handler {
       const chats = this.chats;
       chats.map((item, index) => {
         if (item.from === to) {
+          chats[index].status = 'sent';
           chats[index].lastMessageSent = message;
           chats[index].lastMessageSentTime = new Date();
           chats[index].next = next;
@@ -160,8 +163,8 @@ module.exports = class Handler {
     await this.sendMessage(`Please select menu:\n\n`+this.router.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n'), this.router.map(item => item.keyword));
   }
 
-  async createMenu(title = 'Please select menu:', footer = '\n', options = this.router, next = null) {
-    await this.sendMessage(`${title}\n\n`+options.map((item, index) => `• *${item.keyword}*: ${item.description}`).join('\n')+footer, options.map(item => item.keyword), next);
+  async createMenu(title = 'Please select menu:', footer = '\n', options = this.router, format = `• *{keyword}*: {description}`, next = null) {
+    await this.sendMessage(`${title}\n\n`+options.map((item, index) => format.replace('{keyword}', item.keyword).replace('{description}', item.description)).join('\n')+footer, options.map(item => item.keyword), next);
   }
 
   getChats() {

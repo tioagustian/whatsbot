@@ -11,7 +11,7 @@ module.exports = class Whatsbot {
     
     if (this.config.saveContact) {
       const contacts = require('./Contacts');
-      this.contacts = new contacts(clientId);
+      this.contacts = new contacts(clientId, this.config);
     } else {
       this.contacts = [];
     }

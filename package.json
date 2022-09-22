@@ -1,13 +1,12 @@
 {
   "name": "@tioagustian/whatsbot",
-  "version": "0.0.19",
+  "version": "0.0.22",
   "description": "A toolkit for working with the WhatsApp Web API",
   "main": "index.js",
   "bin": {
     "whatsbot": "/src/bin/cli.js"
   },
   "dependencies": {
-    "axios": "^0.27.2",
     "commander": "^9.4.0",
     "inquirer": "^8.2.4",
     "moment": "^2.29.4",
