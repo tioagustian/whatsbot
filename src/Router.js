@@ -27,11 +27,6 @@ module.exports = class Router {
           if (item.from === message.from) {
             chats[index] = Object.assign(chats[index], this.handler.function, message);
             chats[index].keyword = keyword;
-            // chats[index].id = message.id;
-            // chats[index].from = message.from;
-            // chats[index].body = message.body;
-            // chats[index].hasMedia = message.hasMedia;
-            // chats[index].hasQuotedMsg = message.hasQuotedMsg;
             chats[index].status = 'recieved';
             chats[index].media = media;
             chats[index].recievedAt = new Date();
@@ -39,7 +34,9 @@ module.exports = class Router {
         });
         this.handler.saveChats(chats);
         
-        if (route) {
+        if (message.type == 'location' && this.handler.config.defaultLocationHandler && typeof this.handler.config.defaultLocationHandler === 'function') {
+          await this.handler.config.defaultLocationHandler(chats.find(item => item.from === message.from));
+        } else if (route) {
           if (route.showMenu){
             await this.handler.sendMessage(`Please select menu:\n\n`+this.handler.config.router.map((item, index) => `• *${item.keyword}*, ${item.description}`).join('\n'), this.handler.config.router.map(item => item.keyword));
           } else if (route.action && typeof route.action === 'function') {
@@ -67,11 +64,6 @@ module.exports = class Router {
       ...this.handler.function,
       ...message,
       keyword: 'menu',
-      // id: message.id,
-      // from: message.from,
-      // body: message.body,
-      // hasMedia: message.hasMedia,
-      // hasQuotedMsg: message.hasQuotedMsg,
       status: 'recieved',
       media: media,
       recievedAt: new Date(),
