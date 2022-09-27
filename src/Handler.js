@@ -58,6 +58,18 @@ module.exports = class Handler {
     }
   }
 
+  async handleLocation(message) {
+    try {
+      this.message = message;
+      this.chat = await message.getChat();
+      const router = new Router(this);
+      await this.sleep();
+      await router.callAction();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async reply(message, options = {}, next = null) {
     await this.chat.clearState();
     await this.sleep();

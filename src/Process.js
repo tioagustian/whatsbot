@@ -47,6 +47,9 @@ client.on('message', async message => {
     output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} send media`);
     const media = await message.downloadMedia();
     await handler.handleMedia(message, media);
+  } else if(message.type == 'location') {
+    output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} send location`);
+    await handler.handleLocation(message);
   } else {
     output(`\x1b[33m${clientName}@whatsbot:\x1b[0m ${message.from} say ${message.body}`);
     await handler.handle(message);

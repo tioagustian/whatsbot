@@ -1,5 +1,4 @@
 const { output } = require('./Utils');
-const fs = require('fs');
 
 module.exports = class Whatsbot {
   constructor(client, clientName, clientId, config = 'whatsbot.config.js') {
@@ -15,13 +14,7 @@ module.exports = class Whatsbot {
     } else {
       this.contacts = [];
     }
-    // if (!fs.existsSync(`${__dirname}/../logs/${clientId}-contacts.json`)) {
-    //   fs.writeFileSync(`${__dirname}/../logs/${clientId}-contacts.json`, '[]');
-    // }
-
-    // this.chats = require(`${__dirname}/../logs/${clientId}-chats.js`);
     this.chats = [];
-    // this.contacts = require(`${__dirname}/../logs/${clientId}-contacts.json`);
     this.router = this.config.router;
     this.client = client;
     this.clientName = clientName;
@@ -34,5 +27,18 @@ module.exports = class Whatsbot {
 
   getRouter() {
     return this.router;
+  }
+
+  checkConfigurations() {
+    if (!this.router) {
+      output({message: `\x1b[31mError: \x1b[0mNo router defined in configuration file!`}, 'error');
+    }
+    
+    for (let i = 0; i < this.router.length; i++) {
+      if (!this.router[i].accept) {
+        output({message: `\x1b[33mWarning: \x1b[0mRoute '${route}' has no accepted type. Using default type 'text`});
+        this.router[i].accept = 'text';
+      }
+    }
   }
 }
