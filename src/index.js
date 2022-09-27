@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const { Location: WWJsLocation, MessageMedia: WWJsMessageMedia, Buttons: WWJsButtons, List: WWJsList } = require('whatsapp-web.js');
+const { MessageMedia: WWJsMessageMedia, Buttons: WWJsButtons, List: WWJsList } = require('whatsapp-web.js');
 class WhatsBot {
   constructor(clientName){
     if(clientName.includes('-whatsbot')){
@@ -52,9 +52,11 @@ class WhatsBot {
   }
 }
 
-class Location extends WWJsLocation {
+class Location extends String {
   constructor(latitude, longitude, name = null) {
-    super(latitude, longitude, name);
+    latitude = latitude.replace(/[^0-9.-]/g, '').replace(/\.$/, "");
+    longitude = longitude.replace(/[^0-9.-]/g, '').replace(/\.$/, "");
+    super(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}\n\n${name}`);
   }
 }
 
