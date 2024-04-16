@@ -43,7 +43,6 @@ module.exports = class Router {
             await route.action(chats.find(item => item.from === message.from));
           }
           
-          return "Sent!";
         } else if (typeof chat != 'undefined' && chat.next) {
           if (typeof chat.next === 'function') {
             await chat.next(chats.find(item => item.from === message.from));
@@ -53,7 +52,6 @@ module.exports = class Router {
           const error = this.handler.config.errorMessage || "Sorry, I don't understand that command!";
           await this.handler.reply(error);
           await this.sendWelcomeMessage(message, media, chats);
-          return "Sent!";
         }
       }
     }

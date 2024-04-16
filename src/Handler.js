@@ -28,6 +28,7 @@ module.exports = class Handler {
       saveChats: this.saveChats.bind(this),
       saveContacts: this.saveContacts.bind(this),
       updateContact: this.updateContact.bind(this),
+      sendMessageTo: this.sendMessageTo.bind(this),
       plugins: {
         moment: moment,
       }

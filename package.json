@@ -1,6 +1,6 @@
 {
   "name": "@tioagustian/whatsbot",
-  "version": "0.0.24",
+  "version": "0.0.34",
   "description": "A toolkit for working with the WhatsApp Web API",
   "main": "index.js",
   "bin": {
@@ -13,7 +13,7 @@
     "pm2": "^5.2.0",
     "qrcode-terminal": "^0.12.0",
     "require-context": "^1.1.0",
-    "whatsapp-web.js": "^1.17.1"
+    "whatsapp-web.js": "^1.23.1-alpha.5"
   },
   "devDependencies": {},
   "scripts": {
